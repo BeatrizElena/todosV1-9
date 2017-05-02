@@ -1,4 +1,94 @@
-Version 9: The View Object: Inserting li Elements into the DOM
+Version 10: Adding Delete Buttons next to each todo
+===================================================
+
+Version 10 Requirements: 
+-----------------------
+1. There should be a way to create delete buttons.
+2. There should be a delete button for each todo.
+3. Each li should have an id that has the todo position.
+4. Delete buttons should have access to the todo id.
+5. Clicking delete should update todoList.todos and the DOM.
+
+Version 10 Steps: 
+------------------
+1. Initially, the view.deleteButton() method will not output to the DOM. Here's the deleteButton() method of the view object:
+```
+createDeleteButton: function(){
+    var deleteButton = document.createElement("button");
+    deleteButton.textContent = 'Delete';
+    deleteButton.className = 'deleteButton';
+    return deleteButton;
+  }
+```
+2. To show the delete button on the app, we append to each li element the button created by the createDeleteButton method. We use **.appendChild()** to  append to the li element and we do so inside the displayTodos() method.
+```
+todoLi.appendChild(this.createDeleteButton);
+```
+3. All we do for requirement 3 is to create an id for each li element as we loop through the todos array. So, in the view.displayTodos() method, inside the for loop and below the if/else statements, we add this code:
+```
+todoLi.id = i;
+```
+4. For the delete buttons to access the todo id, we have to understand how the addEventListener() function works on the Ul elemnent.
+  - We add an addEventListener() to the ul rather than to each individula li inside the ul to econmize on memory. For that we get the ul element from the DOM:
+  ```
+  var todosUL = document.querySelector('ul');
+  ```
+  - The addEventListener() is a higher order fx that will have a callback function inside. The syntax of that ddEventListener(), when applied to the ul, will look loke this:
+  ```
+  todosUL.addEventListener('click', function(){
+});
+  ```
+  - The callback function can be given an argument **event**.
+  ```
+  todosUL.addEventListener('click', function(event){
+});
+  ```
+  - That **event** is an object with several properties that can be output to the console whenever we click on any delete button.
+  - Out of the many properties of the **event object**, we care about one: **target**.
+  - The target object inside the event object has one property we care about: **parentNode**.
+  - **The parentNode** of the delete button is shown to be the li, identified with its own **id**.
+  - That id of the li element element is how we'll access the actual element of the delete button the user clicks.
+  - Thus, the 'path' to get to the element we want would be **event.target.parentNode.id**
+  - Once we know, this 'path', we can output the whole thing. (intially to the console for testing).
+  ```
+  todosUL.addEventListener('click', function(event){
+  console.log(event.target.parentNode.id);
+  
+});
+```
+- Once we had the 'path" working, we created another method for the view model and placed the code below there. 
+```
+  setUpEventListeners: function(){
+    var todosUL = document.querySelector('ul');
+    todosUL.addEventListener('click', function(event){
+    // console.log(event.target.parentNode.id); //Needed for Testing Only
+    var elementClicked = event.target;
+    if(elementClicked.className === 'deleteButton'){
+    //run handlers.deleteTodo()function
+    //Fx needs a position argument
+    var position = parseInt(elementClicked.parentNode.id);
+    handlers.deleteTodo(position);
+  }
+```
+- Finally, both the JS and the HTML code have to be cleaned up.
+
+    -- In the HTML, we delete the <div> that has the delete button code.
+    ```
+      <div>
+        <button onclick="handlers.deleteTodo()">Delete</button>
+        <input id="deleteTodoPositionInput" type="number">
+      </div>
+    ```
+
+    -- In the js code, the deleteTodo() method inside the handlers object has to be modified; leaving only these lines:
+    ```
+    deleteTodo: function(position){
+        todoList.deleteTodo(position);
+        view.displayTodos();
+      },
+    ```
+
+Version 9: The View Object - Inserting li Elements into the DOM
 ==============================================================
 In V9, we wrote the displayTodos() function as part of the View object and to interact with the DOM as oppossed to outputting to the console.
 
